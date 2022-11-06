@@ -3,6 +3,7 @@
   background-color:#111;
   overflow-x: hidden;
   padding:2%;
+  display: inline-block;
 }
 
 .sidenav p {
@@ -19,7 +20,7 @@
   color: #818181;
 }
 
-.sidenav a{
+.sidenav > a {
   padding:6px 8px 6px 16px;
   text-decoration: none;
   font-size:25px;

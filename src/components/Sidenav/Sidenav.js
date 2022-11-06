@@ -1,32 +1,46 @@
-import React from "react";
+import React, { useContext } from "react";
+import AuthContext from "../../context/auth-context";
 
 import styles from "./Sidenav.module.css";
 
+const Sidenav = () => {
+  const ctx = useContext(AuthContext);
 
-const Sidenav = (props) => {
-  if (props.isLoggedIn) {
-    return (
-      <div className={styles.sidenav}>
-        <p>
-          <span>Innlogget som:</span>
-          <br />
-          request.user
-        </p>
-        <a href="/lobby">Hjem</a>
-        <a href="/lobby/lag_spill">Lag spill</a>
-        <a href="/gomuku">Gomuku</a>
-        <a href="/frontend">react test</a>
-        <a href="/lobby/logged_out">Logg ut</a>
-      </div>
-    );
-  } else {
-    return (
-      <div className={styles.sidenav}>
-        <a href="/lobby/login">Logg inn</a>
-        <a href="/lobby/register">Registrer</a>
-      </div>
-    );
-  }
+  return (
+    <div className={styles.sidenav}>
+      <ul>
+        {ctx.isLoggedIn && (
+          <React.Fragment>
+            <li>
+              <span>Innlogget som:</span>
+              <br />
+              request.user
+            </li>
+            <li>
+              <a href="/lobby">Hjem</a>
+            </li>
+            <li>
+              <a href="/lobby/lag_spill">Lag spill</a>
+            </li>
+            <li>
+              <a href="/gomuku">Gomuku</a>
+            </li>
+            <li>
+              <a href="/frontend">react test</a>
+            </li>
+            <li>
+              <button onClick={ctx.onLogout}>Logg ut</button>
+            </li>
+          </React.Fragment>
+        )}
+        {!ctx.isLoggedIn && (
+          <li>
+            <a href="/lobby/register">Registrer</a>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
 };
 
 export default Sidenav;

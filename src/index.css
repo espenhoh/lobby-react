@@ -3,10 +3,6 @@
   height: 100%;
 }
 
-div {
-  display: inline-block;
-}
-
 html, body {
   margin: 0;
   height: 100%;
@@ -17,7 +13,13 @@ html {
   font-family: "Noto Sans JP", sans-serif;
 }
 
+main {
+  display: inline-block;
+  vertical-align: top;
+  padding: 2%;
+}
+
 body {
   margin: 0;
-  background-color: #3f3f3f;
+  background-color: #5c3e3e;
 }

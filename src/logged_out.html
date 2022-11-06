@@ -1,0 +1,16 @@
+# login.html
+{% extends "brettspill/base.html" %}
+
+{% block title %}
+    Innlogging
+{% endblock %}
+
+{% block bodyblock %}
+    <form method="post" class="from-group">
+        {% csrf_token %}
+        {{form.as_p}}
+        <p>Ikke registrert enda? Lag en spillkonto <a href="/register">her</a>.</p>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" class="btn btn-success">Login</button>
+    </form>
+{% endblock %}
