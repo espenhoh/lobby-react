@@ -88,7 +88,7 @@ const Register = (props) => {
   };
 
   const validateUsernameHandler = () => {
-    dispatchEmail({ type: "INPUT_BLUR" });
+    dispatchUsername({ type: "INPUT_BLUR" });
   };
 
   const validateEmailHandler = () => {
