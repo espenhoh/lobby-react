@@ -3,19 +3,26 @@ import AuthContext from "../../context/auth-context";
 import Button from "../UI/Button";
 import Input from "../UI/Input";
 
+const INPUT_IDS = {
+  USERNAME: "regkallenavn",
+  EMAIL: "regepost",
+  PASS1: "pass1",
+  PASS2: "pass2",
+};
+
 //import styles from "./LoginContent.module.css";
-const usernameIsValid = (username) => {
+ const usernameIsValid = (username) => {
   const trimmedUsername = username.trim();
-  const reUsername = /^[a-z0-9\s]*$/;
+  const reUsername = /^[a-z0-9]*$/;
   return trimmedUsername.length > 6 && reUsername.test(trimmedUsername);
 };
 
-const usernameReducer = (state, action) => {
+export const usernameReducer = (state, action) => {
   switch (action.type) {
     case "USER_INPUT":
-      return { value: action.val.trim(), isValid: usernameIsValid(action.val) };
+      return { value: action.value.trim(), isValid: usernameIsValid(action.value) };
     case "INPUT_BLUR":
-      return { value: state.value, isValid: usernameIsValid(action.val) };
+      return { value: state.value, isValid: usernameIsValid(state.value) };
     default:
       return { value: "", isValid: false };
   }
@@ -23,7 +30,7 @@ const usernameReducer = (state, action) => {
 
 const emailReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
-    return { value: action.val, isValid: action.val.includes("@") };
+    return { value: action.value, isValid: action.value.includes("@") };
   }
   if (action.type === "INPUT_BLUR") {
     return { value: state.value, isValid: state.value.includes("@") };
@@ -31,14 +38,30 @@ const emailReducer = (state, action) => {
   return { value: "", isValid: false };
 };
 
+const validPass = (pass1, pass2) => {
+  return pass1 === pass2 && pass1.length >7;
+};
+
 const passwordReducer = (state, action) => {
-  if (action.type === "USER_INPUT") {
-    return { value: action.val, isValid: action.val.trim().length > 6 };
+  switch (action.type) {
+    case "USER_INPUT":
+      switch (action.id) {
+        case INPUT_IDS.PASS1:
+          return {pass1: action.value, pass2: state.pass2, isValid: validPass(action.value, state.pass2)};
+        case INPUT_IDS.PASS2:
+          return {pass1: state.pass1, pass2: action.value, isValid: validPass(action.value, state.pass1)};
+        default:
+          throw `${action.id} should not exist`;
+      }
+    case "INPUT_BLUR":
+      return {...state, isValid: validPass(state.pass1, state.pass2)};
+    default:
+      return {
+      pass1: "",
+      pass2: "",
+      isValid: null,
+    };
   }
-  if (action.type === "INPUT_BLUR") {
-    return { value: state.value, isValid: state.value.trim().length > 6 };
-  }
-  return { value: "", isValid: false };
 };
 
 const Register = (props) => {
@@ -51,40 +74,26 @@ const Register = (props) => {
     isValid: null,
   });
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
-    value: "",
+    pass1: "",
+    pass2: "",
     isValid: null,
   });
 
   const usernameInputRef = useRef();
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
-
-  const { isValid: usernameIsValid } = usernameState;
-  const { isValid: emailIsValid } = emailState;
-  const { isValid: passwordIsValid } = passwordState;
-
   //const ctx = useContext(AuthContext);
 
   const usernameChangeHandler = (event) => {
-    dispatchUsername({ type: "USER_INPUT", val: event.target.value });
-
-    // setFormIsValid(
-    //   event.target.value.includes('@') && passwordState.isValid
-    // );
+    dispatchUsername({ type: "USER_INPUT", value: event.target.value });
   };
 
   const emailChangeHandler = (event) => {
-    dispatchEmail({ type: "USER_INPUT", val: event.target.value });
-
-    // setFormIsValid(
-    //   event.target.value.includes('@') && passwordState.isValid
-    // );
+    dispatchEmail({ type: "USER_INPUT", value: event.target.value });
   };
 
   const passwordChangeHandler = (event) => {
-    dispatchPassword({ type: "USER_INPUT", val: event.target.value });
-
-    // setFormIsValid(emailState.isValid && event.target.value.trim().length > 6);
+    dispatchPassword({ type: "USER_INPUT", value: event.target.value, id: event.target.id});
   };
 
   const validateUsernameHandler = () => {
@@ -111,6 +120,7 @@ const Register = (props) => {
     document.title = "Registrer deg nå";
   }, []);
 
+
   return (
     <React.Fragment>
       <h1>Lag en brettspillkonto</h1>
@@ -119,7 +129,7 @@ const Register = (props) => {
           <tbody>
             <Input
               ref={usernameInputRef}
-              id="regkallenavn"
+              id={INPUT_IDS.USERNAME}
               label="Kallenavn"
               type="text"
               value={usernameState.value}
@@ -127,9 +137,9 @@ const Register = (props) => {
               onChange={usernameChangeHandler}
               onBlur={validateUsernameHandler}
             />
-            {/* <Input
+            <Input
               ref={emailInputRef}
-              id="regepost"
+              id={INPUT_IDS.EMAIL}
               label="E-post"
               type="email"
               value={emailState.value}
@@ -139,24 +149,24 @@ const Register = (props) => {
             />
             <Input
               ref={passwordInputRef}
-              id="regpassord"
+              id={INPUT_IDS.PASS1}
               label="Passord"
               type="password"
               isValid={passwordState.isValid}
-              value={passwordState.value}
+              value={passwordState[INPUT_IDS.PASS1]}
               onChange={passwordChangeHandler}
               onBlur={validatePasswordHandler}
             />
             <Input
               ref={passwordInputRef}
-              id="regpassord2"
+              id={INPUT_IDS.PASS2}
               label="Gjenta passord"
               type="password"
               isValid={passwordState.isValid}
-              value={passwordState.value}
+              value={passwordState[INPUT_IDS.PASS2]}
               onChange={passwordChangeHandler}
               onBlur={validatePasswordHandler}
-            /> */}
+            />
           </tbody>
         </table>
 

@@ -1,8 +1,5 @@
 .control {
     margin: 1rem 0;
-    display: flex;
-    align-items: stretch;
-    flex-direction: column;
   }
   
   .control label,
@@ -36,10 +33,10 @@
     background: #fbdada;
   }
   
-  @media (min-width: 768px) {
+/*   @media (min-width: 768px) {
     .control {
       align-items: center;
       flex-direction: row;
     }
-  }
+  } */
   
