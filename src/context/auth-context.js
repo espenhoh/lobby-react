@@ -1,4 +1,4 @@
-import React, {useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const AuthContext = React.createContext({
   isLoggedIn: false,
@@ -23,10 +23,13 @@ export const AuthContexProvider = (props) => {
     setLogoutVisible(true);
   };
 
-  
+  /* useEffect does something after the rendering. React guarantees the DOM has
+   been updated by the time it runs the effects. Setting state inside useEffect
+   causes component to rerender, except when the state is the same as the last
+   rerender, like here. */
   useEffect(() => {
     if (localStorage.getItem("isLoggedIn") === "1") {
-      setIsLoggedIn(true);
+      setIsLoggedIn(false);
     }
   }, []);
 
@@ -37,7 +40,7 @@ export const AuthContexProvider = (props) => {
         logoutVisible: logoutVisible,
         onLogout: logoutHandler,
         onLogin: loginHandler,
-        setLogoutVisible: setLogoutVisible
+        setLogoutVisible: setLogoutVisible,
       }}
     >
       {props.children}
