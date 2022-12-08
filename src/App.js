@@ -16,6 +16,7 @@ const App = () => {
       {ctx.logoutVisible && <Logout setLogoutVisible={ctx.setLogoutVisible}/>}
       <Sidenav />
       <main>
+        <Home/>
         <Register /> 
          
         {ctx.isLoggedIn && <Home/>}
