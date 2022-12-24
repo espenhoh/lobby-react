@@ -110,10 +110,10 @@ const Register = (props) => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    /*ctx.onLogin(
-      usernameRef.current.value.trim(),
-      passwordRef.current.value.trim()
-    );*/
+    fetch('', {
+      method: 'POST'
+    } 
+    )
   };
 
   useEffect(() => {

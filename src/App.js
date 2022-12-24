@@ -17,10 +17,8 @@ const App = () => {
       <Sidenav />
       <main>
         <Home/>
-        <Register /> 
-         
         {ctx.isLoggedIn && <Home/>}
-        {!ctx.isLoggedIn && <Login/>}
+        {!ctx.isLoggedIn && <Register />}
       </main>
     </React.Fragment>
   );
