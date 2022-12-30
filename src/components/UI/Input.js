@@ -31,6 +31,9 @@ const Input = forwardRef((props, ref) => {
           onBlur={props.onBlur}
         />
       </td>
+      <td>
+        <p>{props.error}</p>
+      </td>
     </tr>
   );
 });

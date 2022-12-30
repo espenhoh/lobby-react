@@ -12,7 +12,7 @@ const INPUT_IDS = {
 };
 
 //import styles from "./LoginContent.module.css";
- const usernameIsValid = (username) => {
+const usernameIsValid = (username) => {
   const trimmedUsername = username.trim();
   const reUsername = /^[a-z0-9]*$/;
   return trimmedUsername.length > 6 && reUsername.test(trimmedUsername);
@@ -21,26 +21,55 @@ const INPUT_IDS = {
 export const usernameReducer = (state, action) => {
   switch (action.type) {
     case "USER_INPUT":
-      return { value: action.value.trim(), isValid: usernameIsValid(action.value) };
+      return {
+        value: action.value.trim(),
+        isValid: usernameIsValid(action.value),
+        error: "",
+      };
     case "INPUT_BLUR":
-      return { value: state.value, isValid: usernameIsValid(state.value) };
+      return {
+        value: state.value,
+        isValid: usernameIsValid(state.value),
+        error: "",
+      };
+    case "ERROR":
+      return {
+        value: state.value,
+        isValid: usernameIsValid(state.value),
+        error: action.value,
+      };
     default:
-      return { value: "", isValid: false };
+      return { value: "", isValid: false, error: "" };
   }
 };
 
 const emailReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
-    return { value: action.value, isValid: action.value.includes("@") };
+    return {
+      value: action.value,
+      isValid: action.value.includes("@"),
+      error: "",
+    };
   }
   if (action.type === "INPUT_BLUR") {
-    return { value: state.value, isValid: state.value.includes("@") };
+    return {
+      value: state.value,
+      isValid: state.value.includes("@"),
+      error: "",
+    };
   }
-  return { value: "", isValid: false };
+  if (action.type === "ERROR") {
+    return {
+      value: state.value,
+      isValid: state.value.includes("@"),
+      error: action.value,
+    };
+  }
+  return { value: "", isValid: false, error: "",};
 };
 
 const validPass = (pass1, pass2) => {
-  return pass1 === pass2 && pass1.length >7;
+  return pass1 === pass2 && pass1.length > 7;
 };
 
 const passwordReducer = (state, action) => {
@@ -48,20 +77,28 @@ const passwordReducer = (state, action) => {
     case "USER_INPUT":
       switch (action.id) {
         case INPUT_IDS.PASS1:
-          return {pass1: action.value, pass2: state.pass2, isValid: validPass(action.value, state.pass2)};
+          return {
+            pass1: action.value,
+            pass2: state.pass2,
+            isValid: validPass(action.value, state.pass2),
+          };
         case INPUT_IDS.PASS2:
-          return {pass1: state.pass1, pass2: action.value, isValid: validPass(action.value, state.pass1)};
+          return {
+            pass1: state.pass1,
+            pass2: action.value,
+            isValid: validPass(action.value, state.pass1),
+          };
         default:
           throw `${action.id} should not exist`;
       }
     case "INPUT_BLUR":
-      return {...state, isValid: validPass(state.pass1, state.pass2)};
+      return { ...state, isValid: validPass(state.pass1, state.pass2) };
     default:
       return {
-      pass1: "",
-      pass2: "",
-      isValid: null,
-    };
+        pass1: "",
+        pass2: "",
+        isValid: null,
+      };
   }
 };
 
@@ -69,10 +106,12 @@ const Register = (props) => {
   const [usernameState, dispatchUsername] = useReducer(usernameReducer, {
     value: "",
     isValid: null,
+    error: "",
   });
   const [emailState, dispatchEmail] = useReducer(emailReducer, {
     value: "",
     isValid: null,
+    error: "",
   });
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
     pass1: "",
@@ -94,7 +133,11 @@ const Register = (props) => {
   };
 
   const passwordChangeHandler = (event) => {
-    dispatchPassword({ type: "USER_INPUT", value: event.target.value, id: event.target.id});
+    dispatchPassword({
+      type: "USER_INPUT",
+      value: event.target.value,
+      id: event.target.id,
+    });
   };
 
   const validateUsernameHandler = () => {
@@ -112,23 +155,43 @@ const Register = (props) => {
   const submitHandler = (event) => {
     event.preventDefault();
     axios
-    .post('http://localhost:8000/lobby/register/',
-      {
-        username: usernameState.value,
-        password: passwordState.pass1,
-        password2: passwordState.pass2,
-        email: emailState.value
-      }
-    )
-    .then((response) => {
-      document.title = response.data;
-    });
+      .post(
+        "http://localhost:8000/lobby/register/",
+        {
+          username: usernameState.value,
+          password: passwordState.pass1,
+          password2: passwordState.pass2,
+          email: emailState.value,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        if (error.response.data.username) {
+          console.log(error.response.data.username);
+          dispatchUsername({
+            type: "ERROR",
+            value: error.response.data.username,
+          });
+        }
+
+        if (error.response.data.email) {
+          console.log(error.response.data.email);
+          dispatchEmail({
+            type: "ERROR",
+            value: error.response.data.email,
+          });
+        }
+      });
   };
 
   useEffect(() => {
     document.title = "Registrer deg nå";
   }, []);
-
 
   return (
     <React.Fragment>
@@ -145,6 +208,7 @@ const Register = (props) => {
               isValid={usernameState.isValid}
               onChange={usernameChangeHandler}
               onBlur={validateUsernameHandler}
+              error={usernameState.error}
             />
             <Input
               ref={emailInputRef}
@@ -155,6 +219,7 @@ const Register = (props) => {
               isValid={emailState.isValid}
               onChange={emailChangeHandler}
               onBlur={validateEmailHandler}
+              error={emailState.error}
             />
             <Input
               ref={passwordInputRef}
