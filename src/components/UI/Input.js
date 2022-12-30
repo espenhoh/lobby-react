@@ -24,6 +24,7 @@ const Input = forwardRef((props, ref) => {
       </td>
       <td>
         <input
+          ref={inputRef}
           id={props.id}
           type={props.type}
           value={props.value}
