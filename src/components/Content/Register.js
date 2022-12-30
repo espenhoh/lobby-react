@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useContext, useReducer, useRef } from "react";
 import AuthContext from "../../context/auth-context";
 import Button from "../UI/Button";
@@ -110,10 +111,18 @@ const Register = (props) => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    fetch('', {
-      method: 'POST'
-    } 
+    axios
+    .post('http://localhost:8000/lobby/register/',
+      {
+        username: usernameState.value,
+        password: passwordState.pass1,
+        password2: passwordState.pass2,
+        email: emailState.value
+      }
     )
+    .then((response) => {
+      document.title = response.data;
+    });
   };
 
   useEffect(() => {
