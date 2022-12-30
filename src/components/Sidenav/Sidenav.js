@@ -34,9 +34,14 @@ const Sidenav = () => {
           </React.Fragment>
         )}
         {!ctx.isLoggedIn && (
-          <li>
-            <a href="/lobby/register">Registrer</a>
-          </li>
+          <React.Fragment>
+            <li>
+              <a href="/lobby/register">Registrer deg</a>
+            </li>
+            <li>
+              <a href="/lobby/register">Logg inn</a>
+            </li>
+          </React.Fragment>
         )}
       </ul>
     </div>

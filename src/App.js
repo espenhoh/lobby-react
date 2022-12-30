@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import Login from "./components/Content/Login";
+//import Login from "./components/Content/Login";
 import Home from "./components/Content/Home";
 import Sidenav from "./components/Sidenav/Sidenav";
 import AuthContext from "./context/auth-context";
@@ -16,7 +16,6 @@ const App = () => {
       {ctx.logoutVisible && <Logout setLogoutVisible={ctx.setLogoutVisible}/>}
       <Sidenav />
       <main>
-        <Home/>
         {ctx.isLoggedIn && <Home/>}
         {!ctx.isLoggedIn && <Register />}
       </main>
