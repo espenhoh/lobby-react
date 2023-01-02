@@ -21,36 +21,6 @@ const validPass = (pass1, pass2) => {
   return pass1 === pass2 && pass1.length > 7;
 };
 
-const passwordReducer = (state, action) => {
-  switch (action.type) {
-    case "USER_INPUT":
-      switch (action.id) {
-        case INPUT_IDS.PASS1:
-          return {
-            pass1: action.value,
-            pass2: state.pass2,
-            isValid: validPass(action.value, state.pass2),
-          };
-        case INPUT_IDS.PASS2:
-          return {
-            pass1: state.pass1,
-            pass2: action.value,
-            isValid: validPass(action.value, state.pass1),
-          };
-        default:
-          throw new Error(`${action.id} should not exist`);
-      }
-    case "INPUT_BLUR":
-      return { ...state, isValid: validPass(state.pass1, state.pass2) };
-    default:
-      return {
-        pass1: "",
-        pass2: "",
-        isValid: null,
-      };
-  }
-};
-
 const initalFormState = {
   username: "",
   usernameError: "",
@@ -60,6 +30,7 @@ const initalFormState = {
   emailIsValid: true,
   pass1: "",
   pass2: "",
+  passError: "",
   passIsValid: true,
 }
 
@@ -68,12 +39,6 @@ const Register = (props) => {
     (prevState, action) => ({...prevState, ...action}),
     initalFormState
   )
-  
-  const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
-    pass1: "",
-    pass2: "",
-    isValid: null,
-  });
 
   const usernameInputRef = useRef();
   const emailInputRef = useRef();
@@ -82,15 +47,23 @@ const Register = (props) => {
 
 
   const passwordChangeHandler = (event) => {
-    dispatchPassword({
-      type: "USER_INPUT",
-      value: event.target.value,
-      id: event.target.id,
-    });
-  };
-
-  const validatePasswordHandler = () => {
-    dispatchPassword({ type: "INPUT_BLUR" });
+    const id = event.target.id;
+    switch (id) {
+      case INPUT_IDS.PASS1:
+        dispatchForm({
+          pass1: event.target.value,
+          isValid: validPass(event.target.value, formState.pass2),
+        });
+        break;
+      case INPUT_IDS.PASS2:
+        dispatchForm({
+          pass2: event.target.value,
+          isValid: validPass(event.target.value, formState.pass1),
+        });
+        break;
+      default:
+        throw new Error(`${id} should not exist`);
+    }
   };
 
   const submitHandler = (event) => {
@@ -107,8 +80,8 @@ const Register = (props) => {
         "http://localhost:8000/lobby/register/",
         {
           username: formState.username,
-          password: passwordState.pass1,
-          password2: passwordState.pass2,
+          password: formState.pass1,
+          password2: formState.pass2,
           email: formState.email,
         },
         {
@@ -119,6 +92,7 @@ const Register = (props) => {
         console.log(response.data);
       })
       .catch((error) => {
+        console.log(error);
         if (error.response.data.username) {
           dispatchForm({
             usernameError: error.response.data.username,
@@ -133,6 +107,14 @@ const Register = (props) => {
             emailIsValid: false,
           })
           emailInputRef.current.focus();
+        }
+
+        if (error.response.data.password) {
+          dispatchForm({
+            passError: error.response.data.password,
+            passIsValid: false,
+          })
+          passwordInputRef.current.focus();
         }
       });
   };
@@ -165,20 +147,21 @@ const Register = (props) => {
               id={INPUT_IDS.PASS1}
               label="Passord"
               type="password"
-              isValid={passwordState.isValid}
-              value={passwordState[INPUT_IDS.PASS1]}
+              isValid={formState.passIsValid}
+              value={formState.pass1}
               onChange={passwordChangeHandler}
-              onBlur={validatePasswordHandler}
+              onBlur={() => {}}
+              error={formState.passError}
             />
             <Input
               ref={passwordInputRef}
               id={INPUT_IDS.PASS2}
               label="Gjenta passord"
               type="password"
-              isValid={passwordState.isValid}
-              value={passwordState[INPUT_IDS.PASS2]}
+              isValid={formState.isValid}
+              value={formState.pass2}
               onChange={passwordChangeHandler}
-              onBlur={validatePasswordHandler}
+              onBlur={() => {}}
             />
           </tbody>
         </table>
