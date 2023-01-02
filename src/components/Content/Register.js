@@ -3,6 +3,8 @@ import React, { useEffect, useContext, useReducer, useRef } from "react";
 import AuthContext from "../../context/auth-context";
 import Button from "../UI/Button";
 import Input from "../UI/Input";
+import EmailInput from "../UI/EmailInput";
+import UsernameInput from "../UI/UsernameInput";
 
 const INPUT_IDS = {
   USERNAME: "regkallenavn",
@@ -12,61 +14,8 @@ const INPUT_IDS = {
 };
 
 //import styles from "./LoginContent.module.css";
-const usernameIsValid = (username) => {
-  const trimmedUsername = username.trim();
-  const reUsername = /^[a-z0-9]*$/;
-  return trimmedUsername.length > 6 && reUsername.test(trimmedUsername);
-};
 
-export const usernameReducer = (state, action) => {
-  switch (action.type) {
-    case "USER_INPUT":
-      return {
-        value: action.value.trim(),
-        isValid: usernameIsValid(action.value),
-        error: "",
-      };
-    case "INPUT_BLUR":
-      return {
-        value: state.value,
-        isValid: usernameIsValid(state.value),
-        error: "",
-      };
-    case "ERROR":
-      return {
-        value: state.value,
-        isValid: usernameIsValid(state.value),
-        error: action.value,
-      };
-    default:
-      return { value: "", isValid: false, error: "" };
-  }
-};
 
-const emailReducer = (state, action) => {
-  if (action.type === "USER_INPUT") {
-    return {
-      value: action.value,
-      isValid: action.value.includes("@"),
-      error: "",
-    };
-  }
-  if (action.type === "INPUT_BLUR") {
-    return {
-      value: state.value,
-      isValid: state.value.includes("@"),
-      error: "",
-    };
-  }
-  if (action.type === "ERROR") {
-    return {
-      value: state.value,
-      isValid: state.value.includes("@"),
-      error: action.value,
-    };
-  }
-  return { value: "", isValid: false, error: "",};
-};
 
 const validPass = (pass1, pass2) => {
   return pass1 === pass2 && pass1.length > 7;
@@ -89,7 +38,7 @@ const passwordReducer = (state, action) => {
             isValid: validPass(action.value, state.pass1),
           };
         default:
-          throw `${action.id} should not exist`;
+          throw new Error(`${action.id} should not exist`);
       }
     case "INPUT_BLUR":
       return { ...state, isValid: validPass(state.pass1, state.pass2) };
@@ -102,17 +51,24 @@ const passwordReducer = (state, action) => {
   }
 };
 
+const initalFormState = {
+  username: "",
+  usernameError: "",
+  usernameIsValid: true,
+  email: "",
+  emailError: "",
+  emailIsValid: true,
+  pass1: "",
+  pass2: "",
+  passIsValid: true,
+}
+
 const Register = (props) => {
-  const [usernameState, dispatchUsername] = useReducer(usernameReducer, {
-    value: "",
-    isValid: null,
-    error: "",
-  });
-  const [emailState, dispatchEmail] = useReducer(emailReducer, {
-    value: "",
-    isValid: null,
-    error: "",
-  });
+  const [formState, dispatchForm] = useReducer(
+    (prevState, action) => ({...prevState, ...action}),
+    initalFormState
+  )
+  
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
     pass1: "",
     pass2: "",
@@ -122,15 +78,8 @@ const Register = (props) => {
   const usernameInputRef = useRef();
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
-  //const ctx = useContext(AuthContext);
+  const ctx = useContext(AuthContext);
 
-  const usernameChangeHandler = (event) => {
-    dispatchUsername({ type: "USER_INPUT", value: event.target.value });
-  };
-
-  const emailChangeHandler = (event) => {
-    dispatchEmail({ type: "USER_INPUT", value: event.target.value });
-  };
 
   const passwordChangeHandler = (event) => {
     dispatchPassword({
@@ -140,28 +89,27 @@ const Register = (props) => {
     });
   };
 
-  const validateUsernameHandler = () => {
-    dispatchUsername({ type: "INPUT_BLUR" });
-  };
-
-  const validateEmailHandler = () => {
-    dispatchEmail({ type: "INPUT_BLUR" });
-  };
-
   const validatePasswordHandler = () => {
     dispatchPassword({ type: "INPUT_BLUR" });
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
+    console.log(formState);
+    if (!(
+      formState.usernameIsValid
+      && formState.emailIsValid
+      && formState.passIsValid)) {
+        return;
+    }
     axios
       .post(
         "http://localhost:8000/lobby/register/",
         {
-          username: usernameState.value,
+          username: formState.username,
           password: passwordState.pass1,
           password2: passwordState.pass2,
-          email: emailState.value,
+          email: formState.email,
         },
         {
           headers: { "Content-Type": "application/json" },
@@ -172,25 +120,26 @@ const Register = (props) => {
       })
       .catch((error) => {
         if (error.response.data.username) {
-          console.log(error.response.data.username);
-          dispatchUsername({
-            type: "ERROR",
-            value: error.response.data.username,
+          dispatchForm({
+            usernameError: error.response.data.username,
+            usernameIsValid: false,
           });
+          usernameInputRef.current.focus();
         }
 
         if (error.response.data.email) {
-          console.log(error.response.data.email);
-          dispatchEmail({
-            type: "ERROR",
-            value: error.response.data.email,
-          });
+          dispatchForm({
+            emailError: error.response.data.email,
+            emailIsValid: false,
+          })
+          emailInputRef.current.focus();
         }
       });
   };
 
   useEffect(() => {
     document.title = "Registrer deg nå";
+    usernameInputRef.current.focus();
   }, []);
 
   return (
@@ -199,27 +148,17 @@ const Register = (props) => {
       <form onSubmit={submitHandler} method="POST" className="form-group">
         <table>
           <tbody>
-            <Input
+            <UsernameInput
               ref={usernameInputRef}
               id={INPUT_IDS.USERNAME}
-              label="Kallenavn"
-              type="text"
-              value={usernameState.value}
-              isValid={usernameState.isValid}
-              onChange={usernameChangeHandler}
-              onBlur={validateUsernameHandler}
-              error={usernameState.error}
+              onChange={dispatchForm}
+              error={formState.usernameError}
             />
-            <Input
+            <EmailInput
               ref={emailInputRef}
               id={INPUT_IDS.EMAIL}
-              label="E-post"
-              type="email"
-              value={emailState.value}
-              isValid={emailState.isValid}
-              onChange={emailChangeHandler}
-              onBlur={validateEmailHandler}
-              error={emailState.error}
+              onChange={dispatchForm}
+              error={formState.emailError}
             />
             <Input
               ref={passwordInputRef}
