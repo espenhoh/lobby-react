@@ -17,7 +17,9 @@ const Input = forwardRef((props, ref) => {
 
   return (
     <tr
-      className={`${classes.control} ${props.isValid === false ? classes.invalid : ""}`}
+      className={`${classes.control} ${
+        props.isValid === false ? classes.invalid : ""
+      }`}
     >
       <td>
         <label htmlFor={props.id}>{props.label}</label>
@@ -32,9 +34,11 @@ const Input = forwardRef((props, ref) => {
           onBlur={props.onBlur}
         />
       </td>
-      <td>
-        <p>{props.error}</p>
-      </td>
+      {props.hasError &&
+        <td>
+          <p>{props.error}</p>
+        </td>
+      }
     </tr>
   );
 });
